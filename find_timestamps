@@ -1,0 +1,73 @@
+#!/usr/bin/python3
+
+## Automatic search for F-V
+
+import os
+import numpy
+
+# import subprocess
+#import matplotlib.pyplot as plt
+
+import sys
+sys.path.insert(1, '../../scripts/py')
+import graphene002 as graphene
+import f4wire001 as f4wire
+graphene.set_source(('graphene','-d','/home/sla/DB_COPY', '-R'))
+
+
+def find_fv(name, t1, t2, nmax=30):
+  # get data without any conversion
+  data = f4wire.get_data(name, t1, t2, use_bg=0, cnv_drive=0, cnv_volt=0)
+
+  print('data["%s"]=('%(name))
+  D0=0; dD0=0; # previous drive and drive step
+  i0=0; # index if amp sweep start
+  for i in range(data.shape[0]):
+    D=data[i,4] # drive
+    dD = D-D0 # srive step, round to 6 digits
+
+    # reset condition: same drive or change of step sign:
+    if D==D0 or dD*dD0 < 0:
+      if i-i0 > nmax:
+        print("(%d, %d),"%(numpy.floor(data[i0,0]), numpy.ceil(data[i,0])))
+        #plt.plot(data[i0:i,0]-data[i0,0], data[i0:i,4])
+      i0=i
+
+    D0=D; dD0=dD;
+  print(')')
+
+
+#for name in ('w1a','w1b','w2a', 'w1bt', 'w2bt', 'w1bh', 'w2bh', 'w1ta2', 'w2ta2'):
+#  find_fv(name, '2023-01-17 16:28:00', '2023-01-20 10:00:00') # D01
+#  find_fv(name, '2023-01-25 13:04:00', '2023-01-29 12:54:00') # D02
+#  find_fv(name, '2023-02-08 14:01:00', '2023-02-11 17:22:00') # D03
+#  find_fv(name, '2023-02-20 12:16:00', '2023-02-27 10:40:00') # D04
+#  find_fv(name, '2023-03-02 19:10:00', '2023-03-06 08:30:00') # D05
+#  find_fv(name, '2023-03-12 18:48:00', '2023-03-20 09:58:00') # D06
+#  find_fv(name, '2023-03-28 10:31:00', '2023-03-31 11:30:00') # D07
+#  find_fv(name, '2023-04-06 18:11:00', '2023-04-14 02:05:00') # D08
+#  find_fv(name, '2023-04-24 16:50:00', '2023-05-03 16:10:00') # D09
+
+
+#for name in ('w1a','w1b','w2a', 'w1bt', 'w2bt'):
+#  find_fv(name, '2023-04-24 22:00', '2023-04-25 13:00')
+#  find_fv(name, '2023-04-25 18:00', '2023-04-26 20:00')
+#  find_fv(name, '2023-04-27 10:00', '2023-04-28 10:00')
+#  find_fv(name, '2023-04-29 00:00', '2023-04-30 00:00')
+#  find_fv(name, '2023-04-30 10:00', '2023-05-01 13:00')
+#  find_fv(name, '2023-05-01 18:50', '2023-05-02 20:30')
+#  find_fv(name, '2023-05-02 22:30', '2023-05-03 13:30')
+#  find_fv(name, '2023-05-10 16:00', '2023-05-11 22:00')
+#  find_fv(name, '2023-05-12 12:00', '2023-05-13 12:00')
+#  find_fv(name, '2023-05-13 20:00', '2023-05-15 01:00')
+#  find_fv(name, '2023-05-15 16:00', '2023-05-16 13:00')
+#  find_fv(name, '2023-05-16 16:37', '2023-05-17 04:00')
+
+for name in ('w1ta2',):
+  find_fv(name, '2023-05-17 14:02', '2023-05-17 16:00')
+  
+ # not finished
+
+#plt.gcf().set_size_inches(12, 8)
+#plt.savefig('a.png', dpi=100)
+#plt.close()
