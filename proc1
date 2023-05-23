@@ -41,7 +41,7 @@ def proc1(fdir, name, t1,t2, dmax=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1
   # Minimum voltage is determined by lock-in noise.
   # We have: 8nV for w1a, w2a, w1b
   #          24nV for w1bt, w2bt
-  if   name == 'w1a': vmin = 30e-9
+  if   name == 'w1a': vmin = 20e-9
   elif name == "w2a": vmin = 60e-9
   elif name == "w1b": vmin = 60e-9
   elif name == "w1bt": vmin = 60e-9
@@ -97,7 +97,7 @@ def proc1(fdir, name, t1,t2, dmax=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1
     numpy.column_stack((data.vel, data.dF, data.F0, data.DD, ii)),
     fmt="%10.6f %10.6f %11.6f %.6e %1d", header="vel[cm/s]  width[Hz], freq[Hz], drive[A], fit")
 
-  print("%s  %7.3f %.6f %.6f  %.6f %5.2f"%(name, par[0], par[1], par[2], data.field, data.press), file=fo)
+  print("%s %s %7.3f %.6f %.6f  %.6f %5.2f"%(name, t1, par[0], par[1], par[2], data.field, data.press), file=fo)
 
   ##############
   # plot data
@@ -151,7 +151,7 @@ else: raise Exception("can't parse file name: ", tab)
 
 fi = open(tab)
 fo = open(fdir + "%s.res"%(name), 'w')
-print("# name, delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
+print("# name, time, delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
 
 (fig, ax) = plt.subplots(1,1)
 while line := fi.readline():

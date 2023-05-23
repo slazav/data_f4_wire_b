@@ -75,10 +75,30 @@ file `<wire name>.res` with fitting parameters. Input files contain 2 or
 3 values in each line: two timestamps and optional maximum drive limit.
 Velocity-dependent damping `delta(v)` is recorded to `<wire
 name>/<timestamp>.dat` files. Numpy cache with original data and png plot
-is also saved.
+is also saved (but not added to git).
 
 Example of data processing (wire w1a, field 158 mT, pressure 2.0 bar):
 ![data1](https://raw.githubusercontent.com/slazav/data_f4_wire_b/main/example/1682522772.png)
+
+Example of data in one folder (wire w1a, field 158 mT, pressure 2.0 bar):
+![data1](https://raw.githubusercontent.com/slazav/data_f4_wire_b/main/20230425-02bar-158mT/w2a.png)
+Red points are used for fiting
+
+
+#### Data processing, step 2
+
+We want to find function `S(v)` for a given temperature, pressure, magnetic field.
+This will allow us to convert damping measured at a non-zero velocity to the
+zero-velocity limit. Also it will be possible to fit non-linear resonance curves.
+
+Theoretical temperature dependencies are: `delta0 = A*exp(-Delta/T) + delta_i`, `v0 = B*T`,
+where `A` and `B` depend on wire geometry, mass and Fermi momentum of He quasiparticles.
+We can exclude temperature from these two expressions and write:
+`v0 = B*Delta/log(A) - log(delta0-delta_i))`.
+
+Next step will be to fit all data for a single pressure with this formula, assuming
+following field dependencies: `Delta(B) = Delta(0)*(1 + a*B^2)`, `delta_i(B) = delta_i(0) + b*B^2`.
+We have 5 parameters: `A, B, a, b, delta_i(0)`.
 
 
 
