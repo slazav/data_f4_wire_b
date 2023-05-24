@@ -19,7 +19,7 @@ import fit_res003 as fit_res
 #B0 = A0**2 - 1/8.0
 #C0 = ...
 
-# Fit of S function
+# Fit of theoretical S function
 A0=0.439023879201735
 B0=0.045824276758537
 C0=-0.00192214696297599
@@ -153,7 +153,6 @@ fi = open(tab)
 fo = open(fdir + "%s.res"%(name), 'w')
 print("# name, time, delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
 
-(fig, ax) = plt.subplots(1,1)
 while line := fi.readline():
   line = line.split('#')[0]
   line = line.split()
@@ -162,19 +161,5 @@ while line := fi.readline():
   (t1,t2) = line[:2]
   if len(line)>2: dmax=float(line[2])
   else: dmax=0
-  if proc1(fdir, name, t1, t2, dmax=dmax, fo=fo)==-1:
-    continue
+  proc1(fdir, name, t1, t2, dmax=dmax, fo=fo)
 
-  # plot data
-  dat = fdir + "%s/%i.dat"%(name, float(t1))
-  (vel, dF, F0, DD, S) = numpy.loadtxt(dat, unpack=1)
-  vmin=min(vel[S>0])
-  ax.semilogy(vel[vel>vmin/3], dF[vel>vmin/3], 'b.-')
-  ax.semilogy(vel[S>0], dF[S>0], 'r.-')
-
-ax.set_xlim((0,None))
-ax.set_xlabel('velocity, cm/s')
-ax.set_ylabel('damping, Hz')
-ax.set_title(fdir + name)
-fig.set_size_inches(8, 12)
-fig.savefig(fdir + name + '.png', dpi=100)
