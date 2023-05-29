@@ -19,7 +19,7 @@ def find_fv(name, t1, t2, nmax=30):
   # get data without any conversion
   data = f4wire.get_data(name, t1, t2, use_bg=0, cnv_drive=0, cnv_volt=0)
 
-  print('data["%s"]=('%(name))
+  fo=open(name+'.tab_', 'w')
   D0=0; dD0=0; # previous drive and drive step
   i0=0; # index if amp sweep start
   for i in range(data.shape[0]):
@@ -29,12 +29,10 @@ def find_fv(name, t1, t2, nmax=30):
     # reset condition: same drive or change of step sign:
     if D==D0 or dD*dD0 < 0:
       if i-i0 > nmax:
-        print("(%d, %d),"%(numpy.floor(data[i0,0]), numpy.ceil(data[i,0])))
-        #plt.plot(data[i0:i,0]-data[i0,0], data[i0:i,4])
+        print("%d %d"%(numpy.floor(data[i0,0]), numpy.ceil(data[i,0])), file=fo)
       i0=i
 
     D0=D; dD0=dD;
-  print(')')
 
 
 #for name in ('w1a','w1b','w2a', 'w1bt', 'w2bt', 'w1bh', 'w2bh', 'w1ta2', 'w2ta2'):
@@ -62,9 +60,12 @@ def find_fv(name, t1, t2, nmax=30):
 #  find_fv(name, '2023-05-13 20:00', '2023-05-15 01:00')
 #  find_fv(name, '2023-05-15 16:00', '2023-05-16 13:00')
 #  find_fv(name, '2023-05-16 16:37', '2023-05-17 04:00')
+#  find_fv(name, '2023-05-25 23:00', '2023-05-26 19:00')
+#  find_fv(name, '2023-05-27 13:00', '2023-05-28 11:00')
 
-for name in ('w1ta2',):
-  find_fv(name, '2023-05-17 14:02', '2023-05-17 16:00')
+
+#for name in ('w1ta2',):
+#  find_fv(name, '2023-05-17 14:02', '2023-05-17 16:00')
   
  # not finished
 
