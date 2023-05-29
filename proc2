@@ -37,9 +37,10 @@ def minfunc(par, data):
   ss=0
   for i in range(len(data)):
     (vel, df, S, field) = data[i]
+    ii=S>0
     v0 = B/(A - numpy.log(abs(df0[i])))
-    df1 = abs(func_df(vel[S>0], df0[i], v0, s2, dfi))
-    ss += numpy.linalg.norm(numpy.log(df1) - numpy.log(df[S>0]))
+    df1 = abs(func_df(vel[ii], df0[i], v0, s2, dfi))
+    ss += numpy.linalg.norm(numpy.log(df1) - numpy.log(df[ii]))
   return ss
 
 ######################################################################
@@ -65,7 +66,6 @@ else: raise Exception("can't parse file name: ", tab)
 (tt, df0_1, v0_1, si_1, field, press) = numpy.loadtxt(
   tab, usecols=(1,2,3,4,5,6), unpack=1)
 
-
 #### load data files
 data=[]
 par=[20, 1, 0.1, 0.1]
@@ -78,7 +78,7 @@ for i in range(tt.size):
 
 #### fit data
 res = scipy.optimize.minimize(minfunc, par, (data),
-   options={'disp': False, 'maxiter': 1000})
+   options={'disp': False, 'maxiter': 10000})
 par = res.x.tolist()
 # Parameter uncertainty which corresponds to res.fun
 # which is relative RMS difference between function and the model.
@@ -87,7 +87,7 @@ err = numpy.sqrt(0.5*res.fun*numpy.diag(res.hess_inv)).tolist()
 
 fo = open(fdir + name + '.res2', "w")
 print("# name press field   A B s2 dfi   err(A, B, s2, dfi)", file=fo)
-print("%-4s: %.2f %.4f  %f %f %f %f   %f %f %f %f"\
+print("%-4s  %.2f %.4f  %f %f %f %f  %f %f %f %f"\
   %(name, numpy.mean(press), numpy.mean(field), *par[:4], *err[:4]),
   file=fo)
 fo.close()
@@ -108,6 +108,7 @@ for i in range(len(data)):
   # plot
   vmin=min(vel[S>0])
   vmax=max(vel[S>0])
+
   ax.semilogy(vel[vel>vmin/3], df[vel>vmin/3], 'b.-')
   ax.semilogy(vel[S>0], df[S>0], 'r.-')
   xx=numpy.linspace(0, vmax, 100)
@@ -116,6 +117,7 @@ for i in range(len(data)):
   ax.semilogy(xx, yy1, 'k-', linewidth=0.5)
   ax.semilogy(xx, yy2, 'g-', linewidth=0.5)
 
+ax.grid(which='both')
 ax.set_xlim((0,None))
 ax.set_xlabel('velocity, cm/s')
 ax.set_ylabel('damping, Hz')

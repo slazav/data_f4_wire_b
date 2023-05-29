@@ -24,7 +24,7 @@ A0=0.439023879201735
 B0=0.045824276758537
 C0=-0.00192214696297599
 
-def proc1(fdir, name, t1,t2, dmax=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1, **kwargs):
+def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1, **kwargs):
   print(name, t1,t2, dmax)
   os.makedirs(fdir + name, exist_ok=1)
   t1=graphene.timeconv(t1)
@@ -38,16 +38,6 @@ def proc1(fdir, name, t1,t2, dmax=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1
 
   (fig,ax)=plt.subplots(2,2)
 
-  # Minimum voltage is determined by lock-in noise.
-  # We have: 8nV for w1a, w2a, w1b
-  #          24nV for w1bt, w2bt
-  if   name == 'w1a': vmin = 20e-9
-  elif name == "w2a": vmin = 60e-9
-  elif name == "w1b": vmin = 60e-9
-  elif name == "w1bt": vmin = 60e-9
-  elif name == "w2bt": vmin = 30e-9
-  else: vmin = 8e-9
-
   sfunc=None
   for i in range(4):
     data=f4wire.get_track(name, t1,t2, sfunc=sfunc, cache=pref, **kwargs, fit_npars=8)
@@ -58,7 +48,7 @@ def proc1(fdir, name, t1,t2, dmax=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1
     s = data.DD[0]<data.DD[-1] # sweep direction
 
     # Crop velocity range
-    ii = data.vel>vmin*data.volt2vel
+    ii = data.vel>vmin
 
     # Crop drive
     if dmax>0: ii[data.DD>dmax] = 0
@@ -153,13 +143,18 @@ fi = open(tab)
 fo = open(fdir + "%s.res"%(name), 'w')
 print("# name, time, delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
 
+vmin=0.1
 while line := fi.readline():
   line = line.split('#')[0]
   line = line.split()
   if len(line)<2: continue
 
+  if line[0]=="vmin":
+    vmin=float(line[1])
+    continue
+
   (t1,t2) = line[:2]
   if len(line)>2: dmax=float(line[2])
   else: dmax=0
-  proc1(fdir, name, t1, t2, dmax=dmax, fo=fo)
+  proc1(fdir, name, t1, t2, dmax=dmax, vmin=vmin, fo=fo)
 
