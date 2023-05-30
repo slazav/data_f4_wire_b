@@ -9,10 +9,11 @@ import glob
 import re
 
 import sys
+sys.path.insert(1, '.')
 sys.path.insert(1, '../../scripts/py')
 import graphene002 as graphene
-import f4wire_my as f4wire
 import fit_res003 as fit_res
+import f4track
 
 # Theoretical expansion
 #A0 = 4/(3*numpy.pi)
@@ -33,14 +34,11 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
   def fitfunc(v,df0,v0, Si=0):
     return df0/(1 + A0*(v/v0) + B0*(v/v0)**2 + C0*(v/v0)**3) + df0*Si
 
-  # start with wire parameters without non-linearity:
-  wire = f4wire.wire_info_t(name)
-
   (fig,ax)=plt.subplots(2,2)
 
   sfunc=None
   for i in range(4):
-    data=f4wire.get_track(name, t1,t2, sfunc=sfunc, cache=pref, **kwargs, fit_npars=8)
+    data=f4track.get_track(name, t1,t2, sfunc=sfunc, cache=pref, **kwargs, fit_npars=8)
     if plot_uncorr: ax[1].plot(data.vel, data.dF, 'b-')
     ##############
     # fit dF(vel)

@@ -5,14 +5,9 @@ import math
 import scipy.optimize
 import matplotlib.pyplot as plt
 import os
+import sys
 import glob
 import re
-
-import sys
-sys.path.insert(1, '../../scripts/py')
-import graphene002 as graphene
-import f4wire_my as f4wire
-import fit_res003 as fit_res
 
 # Fit of theoretical S function
 A0=0.439023879201735
