@@ -15,6 +15,30 @@ import graphene002 as graphene
 import fit_res003 as fit_res
 import f4track
 
+###########################################################
+# Download data and do initial fitting.
+# Usage: proc1 <name>.tab
+#
+# Tab file structure:
+# 2 or 3 columns: time1, time2, max_drive
+# vmax <value>: set max velocity for following records
+#
+# Output:
+#   <name>/<time>.{npz,png,dat} -- downloaded data, plot, output.
+#   <name>.res -- fit result
+#
+# *.dat file structure:
+#   vel[cm/s]  width[Hz], freq[Hz], drive[A], fit
+#
+# Fit is done with delta = delta0*[S(v/v0) + Si] function.
+# This model is used for iterative processing of the frequency sweep
+# used in tracking mode processing.
+# More general models with intrinsic widths and relations between v0 and delta0
+# should be done later.
+#
+###########################################################
+
+
 # Theoretical expansion
 #A0 = 4/(3*numpy.pi)
 #B0 = A0**2 - 1/8.0
