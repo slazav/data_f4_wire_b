@@ -41,10 +41,10 @@ def get_track(name, t1, t2,
 
     # Get previous frequency sweep for thermometer and heater:
     if prev_sweeps:
-      sweep = get_sweep_prev(name, t1, nsweeps=nsweeps, nskip=nskip)
+      sweep = f4wire.get_sweep_prev(name, t1, nsweeps=nsweeps, nskip=nskip)
       sweep = numpy.row_stack(sweep)
     else:
-      sweep = get_sweep_next(name, t2, nsweeps=nsweeps, nskip=nskip)
+      sweep = f4wire.get_sweep_next(name, t2, nsweeps=nsweeps, nskip=nskip)
       sweep = numpy.row_stack(sweep)
 
     # Get field
