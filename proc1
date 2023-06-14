@@ -13,7 +13,7 @@ sys.path.insert(1, '.')
 sys.path.insert(1, '../../scripts/py')
 import graphene002 as graphene
 import fit_res003 as fit_res
-import f4track
+import f4track002 as f4track
 
 ###########################################################
 # Download data and do initial fitting.
