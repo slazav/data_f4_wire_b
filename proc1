@@ -60,9 +60,9 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
 
   (fig,ax)=plt.subplots(2,2)
 
-  sfunc=None
+  dfunc=None
   for i in range(4):
-    data=f4track.get_track(name, t1,t2, sfunc=sfunc, cache=pref, **kwargs, fit_npars=8)
+    data=f4track.get_track(name, t1,t2, dfunc=dfunc, cache=pref, **kwargs, fit_npars=8)
     if plot_uncorr: ax[1].plot(data.vel, data.dF, 'b-')
     ##############
     # fit dF(vel)
@@ -103,7 +103,7 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
       par.append(0)
       err.append(0)
 
-    def sfunc(v): return fitfunc(v*data.volt2vel, *par)/par[0]
+    def dfunc(d0, vel): return fitfunc(vel*data.volt2vel, d0, par[1], par[2])
 
   numpy.savetxt(pref+'.dat',
     numpy.column_stack((data.vel, data.dF, data.F0, data.DD, ii)),

@@ -11,7 +11,7 @@ import fit_res003 as fit_res
 
 def get_track(name, t1, t2,
      get=0, cache="", plot="", nsweeps=1, nskip=0, prev_sweeps=1,
-     fit_coord=0, fit_npars=6, sfunc=None, verb=0, osc=""):
+     fit_coord=0, fit_npars=6, dfunc=None, verb=0, osc=""):
 
   ############################
   # get data from DB or cache
@@ -64,7 +64,7 @@ def get_track(name, t1, t2,
   wire = f4wire.wire_info_t(name)
 
   # Fit the sweep
-  fit = fit_res.fit(sweep, coord=fit_coord, npars=fit_npars, sfunc=sfunc)
+  fit = fit_res.fit(sweep, coord=fit_coord, npars=fit_npars, dfunc=dfunc)
 
   # Scale amplitude to new drive, remove offset
   TT = data[:,0]
