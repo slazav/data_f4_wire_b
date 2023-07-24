@@ -45,9 +45,12 @@ import f4track002 as f4track
 #C0 = ...
 
 # Fit of theoretical S function
-A0=0.439023879201735
-B0=0.045824276758537
-C0=-0.00192214696297599
+#A0=0.439023879201735
+#B0=0.045824276758537
+#C0=-0.00192214696297599
+
+A0=0.486387040089067
+B0=1.14243469051564
 
 def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, use_dfi=1, **kwargs):
   print(name, t1,t2, dmax)
@@ -56,7 +59,7 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
   pref = fdir + "%s/%i"%(name, float(t1))
 
   def fitfunc(v,df0,v0, Si=0):
-    return df0/(1 + A0*(v/v0) + B0*(v/v0)**2 + C0*(v/v0)**3) + df0*Si
+    return df0/(1 + A0*abs(v/v0)**B0) + df0*abs(Si)
 
   (fig,ax)=plt.subplots(2,2)
 
@@ -89,14 +92,14 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
     # fit without dFi
     par=[data.dF[ii][0], 0.2]
     err=[0,0]
-    res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=10000)
+    res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=100000)
     par = res[0].tolist()
 
     if use_dfi:
       par.append(+0.05)
       err.append(0)
       # main fit
-      res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=10000)
+      res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=100000)
       par = res[0].tolist()
       err = numpy.sqrt(numpy.diag(res[1])).tolist()
     else:
