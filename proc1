@@ -63,7 +63,7 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
   dfunc=None
   for i in range(4):
     data=f4track.get_track(name, t1,t2, dfunc=dfunc, cache=pref, **kwargs, fit_npars=8)
-    if plot_uncorr: ax[1].plot(data.vel, data.dF, 'b-')
+    if plot_uncorr: ax[0,1].plot(data.vel, data.dF, 'b-')
     ##############
     # fit dF(vel)
 
