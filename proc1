@@ -45,10 +45,6 @@ import f4track002 as f4track
 #C0 = ...
 
 # Fit of theoretical S function
-#A0=0.439023879201735
-#B0=0.045824276758537
-#C0=-0.00192214696297599
-
 A0=0.486387040089067
 B0=1.14243469051564
 
@@ -63,50 +59,47 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
 
   (fig,ax)=plt.subplots(2,2)
 
-  dfunc=None
-  for i in range(4):
-    data=f4track.get_track(name, t1,t2, dfunc=dfunc, cache=pref, **kwargs, fit_npars=8)
-    if plot_uncorr: ax[0,1].plot(data.vel, data.dF, 'b-')
-    ##############
-    # fit dF(vel)
+  data=f4track.get_track(name, t1,t2, dfunc='fit', cache=pref, **kwargs, fit_npars=8)
 
-    s = data.DD[0]<data.DD[-1] # sweep direction
+  ##############
+  # fit dF(vel)
+  s = data.DD[0]<data.DD[-1] # sweep direction
 
-    # Crop velocity range
-    ii = data.vel>vmin
+  # Crop velocity range
+  ii = data.vel>vmin
 
-    # Crop drive
-    if dmax>0: ii[data.DD>dmax] = 0
+  # Crop drive
+  if dmax>0: ii[data.DD>dmax] = 0
 
-    # Select data for fitting, below minimum of dF
-    # Should be done after cropping vmin!
-    imin=numpy.argmin(data.dF[ii])
-    imin=numpy.where(ii)[0][imin]
-    if s: ii[imin:] = 0
-    else: ii[0:imin+1] = 0
+  # Select data for fitting, below minimum of dF
+  # Should be done after cropping vmin!
+  imin=numpy.argmin(data.dF[ii])
+  imin=numpy.where(ii)[0][imin]
+  if s: ii[imin:] = 0
+  else: ii[0:imin+1] = 0
 
-    if data.vel[ii].size<5:
-      print ("  skip short dataset: ", name, t1, data.vel[ii].size)
-      return -1
+  if data.vel[ii].size<5:
+    print ("  skip short dataset: ", name, t1, data.vel[ii].size)
+    return -1
 
-    # fit without dFi
-    par=[data.dF[ii][0], 0.2]
-    err=[0,0]
+  # fit without dFi
+  par=[data.dF[ii][0], 0.2]
+  err=[0,0]
+  res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=100000)
+  par = res[0].tolist()
+
+  if use_dfi:
+    par.append(+0.05)
+    err.append(0)
+    # main fit
     res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=100000)
     par = res[0].tolist()
+    err = numpy.sqrt(numpy.diag(res[1])).tolist()
+  else:
+    par.append(0)
+    err.append(0)
 
-    if use_dfi:
-      par.append(+0.05)
-      err.append(0)
-      # main fit
-      res = scipy.optimize.curve_fit(fitfunc, data.vel[ii], data.dF[ii], par, maxfev=100000)
-      par = res[0].tolist()
-      err = numpy.sqrt(numpy.diag(res[1])).tolist()
-    else:
-      par.append(0)
-      err.append(0)
-
-    def dfunc(d0, vel): return fitfunc(vel*data.volt2vel, d0, par[1], par[2])
+  def dfunc(d0, vel): return fitfunc(vel*data.volt2vel, d0, par[1], par[2])
 
   numpy.savetxt(pref+'.dat',
     numpy.column_stack((data.vel, data.dF, data.F0, data.DD, ii)),
@@ -125,6 +118,13 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
   ax[0,1].plot(data.vel[ii], data.dF[ii], 'r.')
   xx=numpy.linspace(0, max(data.vel), 100)
   ax[0,1].plot(xx, fitfunc(xx, *par), 'k-')
+
+  # sweep trace 
+  maxvel=data.fit.amp * data.sweep[0,4] * data.volt2vel
+  ax[0,1].plot(xx, fitfunc(xx, data.fit.df, data.fit.v0*data.volt2vel), 'g--', linewidth=0.5)
+  xx=numpy.linspace(0, maxvel, 100)
+  ax[0,1].plot(xx, fitfunc(xx, data.fit.df, data.fit.v0*data.volt2vel), 'g-')
+
   ax[0,1].set_xlim((0,None))
   ax[0,1].set_ylim((0,fitfunc(0, *par)))
   ax[0,1].set_xlabel("velocity, cm/s")
