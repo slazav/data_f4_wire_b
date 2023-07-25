@@ -31,18 +31,10 @@ import f4track002 as f4track
 #   vel[cm/s]  width[Hz], freq[Hz], drive[A], fit
 #
 # Fit is done with delta = delta0*[S(v/v0) + Si] function.
-# This model is used for iterative processing of the frequency sweep
-# used in tracking mode processing.
 # More general models with intrinsic widths and relations between v0 and delta0
 # should be done later.
 #
 ###########################################################
-
-
-# Theoretical expansion
-#A0 = 4/(3*numpy.pi)
-#B0 = A0**2 - 1/8.0
-#C0 = ...
 
 # Fit of theoretical S function
 A0=0.486387040089067
@@ -98,6 +90,7 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
   else:
     par.append(0)
     err.append(0)
+  par[1] = abs(par[1])
 
   def dfunc(d0, vel): return fitfunc(vel*data.volt2vel, d0, par[1], par[2])
 
@@ -105,7 +98,9 @@ def proc1(fdir, name, t1,t2, dmax=0, vmin=0, plot_uncorr=False, fo=sys.stdout, u
     numpy.column_stack((data.vel, data.dF, data.F0, data.DD, ii)),
     fmt="%10.6f %10.6f %11.6f %.6e %1d", header="vel[cm/s]  width[Hz], freq[Hz], drive[A], fit")
 
-  print("%s %s %7.3f %.6f %.6f  %.6f %5.2f"%(name, t1, par[0], par[1], par[2], data.field, data.press), file=fo)
+  print("%s %s  %7.3f %.6f  %7.3f %.6f %.6f  %.6f %5.2f"%(\
+    name, t1, data.fit.df, data.fit.v0*data.volt2vel,\
+    par[0], par[1], par[2], data.field, data.press), file=fo)
 
   ##############
   # plot data
@@ -166,7 +161,7 @@ else: raise Exception("can't parse file name: ", tab)
 
 fi = open(tab)
 fo = open(fdir + "%s.res"%(name), 'w')
-print("# name, time, delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
+print("# name, time, sw_delta0[Hz], sw_v0[cm/s], delta0[Hz], v0[cm/s], Si, B[T], P[bar] ", file=fo)
 
 vmin=0.1
 while line := fi.readline():
