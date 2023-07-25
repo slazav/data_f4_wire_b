@@ -21,7 +21,7 @@ import f4track002 as f4track
 #
 # Tab file structure:
 # 2 or 3 columns: time1, time2, max_drive
-# vmax <value>: set max velocity for following records
+# vmin<value>: set min velocity for following records
 #
 # Output:
 #   <name>/<time>.{npz,png,dat} -- downloaded data, plot, output.
