@@ -45,15 +45,14 @@ def minfunc(par, data):
 
 ######################################################################
 if len(sys.argv)<2:
-  raise Exception("Usage: plot_model <res file> ...")
+  raise Exception("Usage: plot_model <pref> <res file> ...")
 
 data=[]
-par=[16, 0.3, 0.16, 26, B0]
-par=[16.005805371316118, 0.30518956316729046, 0.16183975459414213, 26.812092136861004, 0.836115836789375]  # 2bar
-par=[17.40579784002655, 0.31332708535561227, 0.4865821777391899, 13.840070468738114, 0.8724528622108128] # w1a, 0bar
+par=[16, 0.3, 0.05, 10, 1.1]
 
 
-for tab in sys.argv[1:]:
+pref=sys.argv[1]
+for tab in sys.argv[2:]:
   name=re.match('(.*/)?([^/]+)\.res$', tab)
 
   if not name:
@@ -93,7 +92,7 @@ err=numpy.zeros_like(par)
 
 #### fit data
 res = scipy.optimize.minimize(minfunc, par, (data),
-   options={'disp': False, 'maxiter': 10000})
+   options={'disp': False, 'maxiter': 100000})
 par = res.x.tolist()
 # Parameter uncertainty which corresponds to res.fun
 # which is relative RMS difference between function and the model.
@@ -102,10 +101,10 @@ err = numpy.sqrt(0.5*res.fun*numpy.diag(res.hess_inv)).tolist()
 
 print(par[:5])
 
-fo = open(name + '.res3', "w")
-print("# name press field   A B dfi dfl p0  err(A, B, dfi, dfl, p0)  vmin vmax", file=fo)
-print("%-4s  %.2f %.4f  %f %f %f %f %f  %f %f %f %f %f  %f %f"\
-  %(name, numpy.mean(press), numpy.mean(field), *par[:5], *err[:5], vmin, vmax),
+fo = open(pref + "_" + name + '.res3', "w")
+print("# name press  A B dfi dfl p0  err(A, B, dfi, dfl, p0)  vmin vmax", file=fo)
+print("%-4s  %.2f  %f %f %f %f %f  %f %f %f %f %f  %f %f"\
+  %(name, numpy.mean(press), *par[:5], *err[:5], vmin, vmax),
   file=fo)
 fo.close()
 
@@ -123,16 +122,10 @@ def func_df1(v, field, df0):
   v0 = B/(A - numpy.log(abs(df0)))
   return func_df(v, field, df0, v0, dfi, dff, p0)
 
-# plot vmin/vmax
-#ax.semilogy([vmin,vmin], [func_df1(vmin, min(df0)), func_df1(vmin, max(df0))], 'c-')
-#ax.semilogy([vmax,vmax], [func_df1(vmax, min(df0)), func_df1(vmax, max(df0))], 'c-')
-
-
 cols = {46: 'C0', 69: 'C1', 91: 'C2', 113: 'C3', 136: 'C4', 135: 'C4', 158: 'C5', 203: 'C6'}
 
 for i in range(len(data)):
   (vel, df, S, field) = data[i]
-#  v0 = B/(A - numpy.log(abs(df0[i])))
 
   vmin=min(vel[S>0])
   vmax=max(vel[S>0])
@@ -143,19 +136,16 @@ for i in range(len(data)):
     print('unknown field: ', ifld)
     c='k'
 
-#  ax.semilogy(vel[vel>vmin/3], df[vel>vmin/3], c+'.')
   ax.semilogy(vel[S>0], df[S>0], c+'.')
   xx=numpy.linspace(0, vmax, 100)
-#  yy1 = funcS0(xx,  df0_1[i], v0_1[i], si_1[i])
   yy2 = func_df1(xx, field, df0[i])
-#  ax.semilogy(xx, yy1, 'k-', linewidth=0.5)
   ax.semilogy(xx, yy2, c+'-', linewidth=0.5)
 
 
-ax.grid(which='both')
+#ax.grid(which='both')
 ax.set_xlim((0,None))
 ax.set_xlabel('velocity, cm/s')
 ax.set_ylabel('damping, Hz')
 ax.set_title(fdir + name)
 fig.set_size_inches(8, 12)
-fig.savefig(name + '.png', dpi=100)
+fig.savefig(pref + "_" + name + '.png', dpi=100)
