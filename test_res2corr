@@ -3,14 +3,14 @@
 import sys
 import numpy
 import matplotlib.pyplot as plt
-sys.path.insert(1, '../../scripts/py')
+#sys.path.insert(1, '../../scripts/py')
+sys.path.insert(1, '.')
 import res2corr
 
 fn='20230530-05bar-091mT/w1a/1685460893.dat'
-res2='20230530-05bar-091mT/w1a.res2'
 
 (vel, width) = numpy.loadtxt(fn, unpack=1, usecols=(0,1))
-width0 = res2corr.res2_delta_to_delta0(vel, width, res2)
+width0 = res2corr.res2_delta_to_delta0(vel, width, 'w1a', 5.0, 0.091)
 
 plt.plot(vel, width,  'r*', label='uncorrected')
 plt.plot(vel, width0, 'b*', label='corrected')
