@@ -18,7 +18,7 @@ All are NbTi wires.
 Wires are driven with AC current via "drive boxes" (transformer 6.4:1 +
 100 kOhm current source + 20dB attenuator). Measured with cold
 transformer (1:100 for w2bt, 1:30 for other wires), Femto lock-in
-amplifiers and, PicoADC card.
+amplifiers, and PicoADC card.
 
 Recorded data can be found in `<wire_name>_sweeps` databases, they have 5 columns:
 * time, unix seconds
@@ -38,9 +38,8 @@ Frequency adjustment (and assumption that the resonance is linear) is not
 important for further processing, it is possible to work at any frequency.
 At the resonance we have better accuracy and simpler force-velocity data.
 
-Measurements are repeated as a function of temperature at different magnetic
+Measurements are repeated at different temperatures, magnetic
 fields and pressures.
-
 
 #### Data processing, step 1
 
@@ -56,18 +55,15 @@ its possible drifts are not important, because in each measurement we use
 additional offset (complex linear function, 4 parameters) when fitting
 the resonance curve.
 
-As described in the Arxiv paper, from each amplitude sweep we obtain
-velocity-dependent damping and represent it as `delta(v) = delta0 *
-S(|v|)` where `S(0) = 1`. Then we use this non-linear damping to re-fit
-the resonance curve and repeat this procedure a few times until it
-converges.
+Tracking mode is processed. Frequncy sweep is fit with B-phase
+non-linear response function, Lorentzian with one extra parameter, v0.
 
 For fitting velocity-dependent damping we use formula
 `delta(v) = delta_0 * [ Sth(v/v0) + Si]` with 3 fitting parameters:
 
 * `delta_0` -- Dampung at zero velocity, extrapolation of `delta(v)` to `v=0`.
 * `v0` -- We use theoretical S-function for 1D scattering model `S_th`. `v0` is velocity scaling.
-* `Si` -- Additional fitting parameter. At low temperature it will include field-dependent
+* `Si` -- Additional fitting parameter. At low temperature it includes field-dependent
 intrinsic damping of the wire.
 
 Script `proc1` reads file with timestamps `<wire_name>.tab` and writes
@@ -80,26 +76,6 @@ is also saved (but not added to git).
 Example of data processing (wire w1a, field 158 mT, pressure 2.0 bar):
 ![data1](https://raw.githubusercontent.com/slazav/data_f4_wire_b/main/example/1682522772.png)
 
-Example of data in one folder (wire w1a, field 158 mT, pressure 2.0 bar):
-![data1](https://raw.githubusercontent.com/slazav/data_f4_wire_b/main/20230425-02bar-158mT/w2a.png)
-Red points are used for fiting
+Script `proc2` plots all data and fits for each field.
 
-
-#### Data processing, step 2
-
-We want to find function `S(v)` for a given temperature, pressure, magnetic field.
-This will allow us to convert damping measured at a non-zero velocity to the
-zero-velocity limit. Also it will be possible to fit non-linear resonance curves.
-
-Theoretical temperature dependencies are: `delta0 = A*exp(-Delta/T) + delta_i`, `v0 = B*T`,
-where `A` and `B` depend on wire geometry, mass and Fermi momentum of He quasiparticles.
-We can exclude temperature from these two expressions and write:
-`v0 = B*Delta/log(A) - log(delta0-delta_i))`.
-
-Next step will be to fit all data for a single pressure with this formula, assuming
-following field dependencies: `Delta(B) = Delta(0)*(1 + a*B^2)`, `delta_i(B) = delta_i(0) + b*B^2`.
-We have 5 parameters: `A, B, a, b, delta_i(0)`.
-
-
-
-
+Folder `fit_one_press` contains models for each pressure.

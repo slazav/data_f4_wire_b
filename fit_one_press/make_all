@@ -1,9 +1,0 @@
-#!/bin/sh
-
-for press in  02 05; do
-  for w in w1a w1b w2a w1bt w2bt; do
-    ./proc3 ../*-${press}bar-*/$w.res
-    mv $w.res3 p${press}_$w.res3
-    mv $w.png  p${press}_$w.png
-  done
-done

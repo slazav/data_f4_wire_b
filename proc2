@@ -10,37 +10,17 @@ import glob
 import re
 
 # Fit of theoretical S function
-A0=0.439023879201735
-B0=0.045824276758537
-C0=-0.00192214696297599
+A0=0.486387040089067
+B0=1.14243469051564
 
 ######################################################################
-# Make a single model for one field
-# Read *.res file, write *.res2 file
+# Collect all plots for each field
+# Read *.res file, write *.png
 #
 ######################################################################
 # function for proc1 fits
 def funcS0(v,df0,v0,si):
-  return df0/(1 + A0*(v/v0) + B0*(v/v0)**2 + C0*(v/v0)**3) + df0*si
-
-# function for proc2 fits
-def func_df(v,df0,v0, s2, dfi):
-  return df0/(1 + A0*(v/v0) + s2*B0*(v/v0)**2) + dfi
-
-def minfunc(par, data):
-  A = par[0]
-  B = par[1]
-  s2 = par[2]
-  dfi = par[3]
-  df0 = par[4:]
-  ss=0
-  for i in range(len(data)):
-    (vel, df, S, field) = data[i]
-    ii=S>0
-    v0 = B/(A - numpy.log(abs(df0[i])))
-    df1 = abs(func_df(vel[ii], df0[i], v0, s2, dfi))
-    ss += numpy.linalg.norm(numpy.log(df1) - numpy.log(df[ii]))
-  return ss
+  return df0/(1 + A0*abs(v/v0)**B0) + df0*si
 
 ######################################################################
 if len(sys.argv)!=2:
@@ -62,62 +42,39 @@ elif len(name) == 2:
 else: raise Exception("can't parse file name: ", tab)
 
 #### load res file
-(tt, df0_1, v0_1, si_1, field, press) = numpy.loadtxt(
-  tab, usecols=(1,2,3,4,5,6), unpack=1)
+(tt, df0_sw, v0_sw, df0_1, v0_1, si_1, field, press) = numpy.loadtxt(
+  tab, usecols=(1,2,3,4,5,6,7,8), unpack=1)
 
 #### load data files
 data=[]
-par=[20, 1, 0.1, 0.1]
+par=[20, 0.3, 0.1, B0]
 vmin=0
 vmax=float('+inf')
 for i in range(tt.size):
   fname2 = "%s/%s/%.0f.dat"%(fdir,name, tt[i])
   (vel, dF, F0, DD, S) = numpy.loadtxt(fname2, unpack=1)
   data.append((vel, dF, S, field[i]))
-  par.append(df0_1[i])
+  par.append(max(dF[S>0]))
 
   # collect vmin/vmax information, but only if it's not end points:
   vmin1=min(vel[S>0])
   vmax1=max(vel[S>0])
   if vmin1!=min(vel) and vmin < vmin1: vmin = vmin1
   if vmax1!=max(vel) and vmax > vmax1: vmax = vmax1
+err=numpy.zeros_like(par)
 
-#### fit data
-res = scipy.optimize.minimize(minfunc, par, (data),
-   options={'disp': False, 'maxiter': 10000})
-par = res.x.tolist()
-# Parameter uncertainty which corresponds to res.fun
-# which is relative RMS difference between function and the model.
-# df = d2f/dx2 dx2 -> dx = dqrt(0.5*df*H^-1)
-err = numpy.sqrt(0.5*res.fun*numpy.diag(res.hess_inv)).tolist()
-
-fo = open(fdir + name + '.res2', "w")
-print("# name press field   A B s2 dfi   err(A, B, s2, dfi)  vmin vmax", file=fo)
-print("%-4s  %.2f %.4f  %f %f %f %f  %f %f %f %f  %f %f"\
-  %(name, numpy.mean(press), numpy.mean(field), *par[:4], *err[:4], vmin, vmax),
-  file=fo)
-fo.close()
 
 #### plot data
 (fig, ax) = plt.subplots(1,1)
 # same as in minfunc()
 A = par[0]
 B = par[1]
-s2 = par[2]
-dfi = par[3]
+dfi = par[2]
+p0  = par[3]
 df0 = par[4:]
-
-def func_df1(v, df0):
-  v0 = B/(A - numpy.log(abs(df0)))
-  return func_df(v, df0, v0, s2, dfi)
-
-# plot vmin/vmax
-ax.semilogy([vmin,vmin], [func_df1(vmin, min(df0)), func_df1(vmin, max(df0))], 'c-')
-ax.semilogy([vmax,vmax], [func_df1(vmax, min(df0)), func_df1(vmax, max(df0))], 'c-')
 
 for i in range(len(data)):
   (vel, df, S, field) = data[i]
-#  v0 = B/(A - numpy.log(abs(df0[i])))
 
   vmin=min(vel[S>0])
   vmax=max(vel[S>0])
@@ -126,10 +83,7 @@ for i in range(len(data)):
   ax.semilogy(vel[S>0], df[S>0], 'r.-')
   xx=numpy.linspace(0, vmax, 100)
   yy1 = funcS0(xx,  df0_1[i], v0_1[i], si_1[i])
-  yy2 = func_df1(xx, df0[i])
   ax.semilogy(xx, yy1, 'k-', linewidth=0.5)
-  ax.semilogy(xx, yy2, 'g-', linewidth=0.5)
-
 
 ax.grid(which='both')
 ax.set_xlim((0,None))
